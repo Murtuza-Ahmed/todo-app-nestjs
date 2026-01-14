@@ -46,6 +46,10 @@ export class UserService {
     }
   }
 
+  findUserById(id: number) {
+    return this.userRepository.findOneOrFail({ where: { id: id } })
+  }
+
   findUserByEmail(email: string) {
     return this.userRepository.findOneOrFail({ where: { email: email } })
   }

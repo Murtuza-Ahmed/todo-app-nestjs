@@ -5,16 +5,16 @@ import { UpdateTodoDto } from './dto/update-todo.dto';
 
 @Controller('todo')
 export class TodoController {
-  constructor(private readonly todoService: TodoService) {}
+  constructor(private readonly todoService: TodoService) { }
 
   @Post()
   create(@Body() createTodoDto: CreateTodoDto) {
-    return this.todoService.create(createTodoDto);
+    return this.todoService.create(createTodoDto, 1); // Assuming userId is 1 for now
   }
 
   @Get()
   findAll() {
-    return this.todoService.findAll();
+    return this.todoService.findAllTodoByUserNotCompleted(1); // Assuming userId is 1 for now
   }
 
   @Get(':id')
