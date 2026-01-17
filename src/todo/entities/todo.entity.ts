@@ -1,5 +1,5 @@
 import { User } from 'src/user/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm'
 
 @Entity()
 export class Todo {
@@ -9,16 +9,13 @@ export class Todo {
   @Column()
   title: string;
 
-  @Column({ default: false })
+  @Column()
   completed: boolean;
 
-  @Column()
-  date: string;
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   createdAt: Date;
 
   // many todos belong to one user
-  @ManyToOne(() => User, (user) => user.todos)
+  @ManyToOne(() => User, (user) => user.todos, { onDelete: 'CASCADE' })
   user: User;
 }

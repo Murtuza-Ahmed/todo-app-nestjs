@@ -16,8 +16,10 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
 
+    const email = createUserDto.email.toLowerCase();
+
     const exitingUser = await this.userRepository.findOne({
-      where: { email: createUserDto.email.toLowerCase() }
+      where: { email }
     })
 
     if (exitingUser) {
@@ -31,27 +33,23 @@ export class UserService {
       password: hashedPassword,
       role: Constants.ROLE.NORMAL_ROLE,
     })
-    const savedUser = await this.userRepository.save(user);
-    return {
-      success: true,
-      message: 'User created successfully',
-      data: {
-        id: savedUser.id,
-        firstName: savedUser.firstName,
-        lastName: savedUser.lastName,
-        email: savedUser.email,
-        role: savedUser.role,
-        createdAt: savedUser.createdAt,
-      }
-    }
+    return await this.userRepository.save(user);
   }
 
   findUserById(id: number) {
-    return this.userRepository.findOneOrFail({ where: { id: id } })
+    const user = this.userRepository.findOneOrFail({ where: { id } });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return user;
   }
 
   findUserByEmail(email: string) {
-    return this.userRepository.findOneOrFail({ where: { email: email } })
+    const user = this.userRepository.findOneOrFail({ where: { email: email } });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return user;
   }
 
 
@@ -75,10 +73,6 @@ export class UserService {
     if (result.affected === 0) {
       throw new BadRequestException('User not found');
     }
-    return {
-      success: true,
-      data: result,
-      message: 'User deleted successfully',
-    };
+    return result;
   }
 }

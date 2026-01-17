@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,38 +14,90 @@ export class TodoService {
     private readonly userService: UserService,
   ) { }
   // CRUD Operations
-  async create(createTodoDto: CreateTodoDto, userId: number) {
-    let todo: Todo = new Todo();
-    todo.title = createTodoDto.title;
-    todo.completed = false;
-    todo.date = new Date().toLocaleString();
-    todo.user = await this.userService.findUserById(userId); // Set user to null or assign a user entity if available
-    return this.todoRepository.save(todo);
+  async create(createTodoDto: CreateTodoDto, userId: number): Promise<Todo> {
+    const user = await this.userService.findUserById(userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const todo = this.todoRepository.create({
+      title: createTodoDto.title,
+      completed: false,
+      user: user,
+    })
+    return await this.todoRepository.save(todo);
   }
 
-  findAllTodoByUserNotCompleted(userId: number) {
-    return this.todoRepository.find({
-      relations: ['user'],
-      where: { user: { id: userId }, completed: false },
-    });
-  }
+  // async findAllTodoByUserNotCompleted(userId: number) {
+  //   const user = await this.userService.findUserById(userId);
+  //   if (!user) {
+  //     throw new BadRequestException('User not found');
+  //   }
+  //   return this.todoRepository.find({
+  //     // relations: ['user'],
+  //     where: {
+  //       user: { id: userId },
+  //       completed: false
+  //     },
+  //   });
+  // }
 
-  findAllTodoByUserCompleted(userId: number) {
+  // async findAllTodoByUserCompleted(userId: number) {
+  //   const user = await this.userService.findUserById(userId);
+  //   if (!user) {
+  //     throw new BadRequestException('User not found');
+  //   }
+  //   return this.todoRepository.find({
+  //     // relations: ['user'],
+  //     where: {
+  //       user: { id: userId },
+  //       completed: true
+  //     },
+  //   })
+  // }
+
+  async findTodosByUser(userId: number, completed: boolean) {
+    const user = await this.userService.findUserById(userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
     return this.todoRepository.find({
-      relations: ['user'],
-      where: { user: { id: userId }, completed: true },
+      where: {
+        user: { id: userId },
+        completed,
+      }
     })
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} todo`;
+  async updateTodoStatus(todoId: number, userId: number) {
+    if (!todoId) {
+      throw new BadRequestException('Todo ID is required');
+    }
+    const todo = await this.todoRepository.findOne({
+      where: {
+        id: todoId,
+        user: { id: userId }
+      }
+    });
+    if (!todo) {
+      throw new BadRequestException('Todo not found');
+    }
+
+    todo.completed = true;
+
+    return this.todoRepository.save(todo);
   }
 
-  update(id: number, updateTodoDto: UpdateTodoDto) {
-    return `This action updates a #${id} todo`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} todo`;
+  async removeTodo(todoId: number, userId: number) {
+    const todo = await this.todoRepository.findOne({
+      where: {
+        id: todoId,
+        user: { id: userId }
+      }
+    });
+    if (!todo) {
+      throw new BadRequestException('Todo not found');
+    }
+    await this.todoRepository.remove(todo);
   }
 }
