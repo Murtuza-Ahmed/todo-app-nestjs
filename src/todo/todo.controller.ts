@@ -1,34 +1,58 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
-import { UpdateTodoDto } from './dto/update-todo.dto';
 
 @Controller('todo')
 export class TodoController {
   constructor(private readonly todoService: TodoService) { }
 
-  @Post()
-  create(@Body() createTodoDto: CreateTodoDto) {
-    return this.todoService.create(createTodoDto, 1); // Assuming userId is 1 for now
+  @Post('create')
+  async createTodo(@Body() createTodoDto: CreateTodoDto, @Req() req) {
+    const todo = await this.todoService.create(createTodoDto, req.user.id)
+    return {
+      success: true,
+      message: 'Todo created successfully',
+      data: todo,
+    };
   }
 
-  @Get()
-  findAll() {
-    return this.todoService.findAllTodoByUserNotCompleted(1); // Assuming userId is 1 for now
+  @Get('completed')
+  async findCompletedTodos(@Req() req) {
+    const todos = await this.todoService.findTodosByUser(req.user.id, true);
+    return {
+      success: true,
+      message: 'Completed todos retrieved successfully',
+      data: todos,
+    };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.todoService.findOne(+id);
+  @Get('not-completed')
+  async findNotCompletedTodos(@Req() req) {
+    const todos = await this.todoService.findTodosByUser(req.user.id, false);
+    return {
+      success: true,
+      message: 'Not completed todos retrieved successfully',
+      data: todos,
+    };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTodoDto: UpdateTodoDto) {
-    return this.todoService.update(+id, updateTodoDto);
+  @Patch(':id/update')
+  async completeTodo(@Param('id') id: number, @Req() req) {
+    const todo = await this.todoService.updateTodoStatus(id, req.user.id);
+    return {
+      success: true,
+      message: 'Todo marked as completed',
+      data: todo,
+    };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.todoService.remove(+id);
+  async deleteTodo(@Param('id') id: number, @Req() req) {
+    await this.todoService.removeTodo(id, req.user.id);
+
+    return {
+      success: true,
+      message: 'Todo deleted successfully',
+    };
   }
 }
