@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
-import { UpdateTodoDto } from './dto/update-todo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Todo } from './entities/todo.entity';
 import { Repository } from 'typeorm';
@@ -69,14 +68,13 @@ export class TodoService {
     })
   }
 
-  async updateTodoStatus(todoId: number, userId: number) {
+  async updateTodoStatus(todoId: number) {
     if (!todoId) {
       throw new BadRequestException('Todo ID is required');
     }
     const todo = await this.todoRepository.findOne({
       where: {
-        id: todoId,
-        user: { id: userId }
+        id: todoId
       }
     });
     if (!todo) {
@@ -88,11 +86,10 @@ export class TodoService {
     return this.todoRepository.save(todo);
   }
 
-  async removeTodo(todoId: number, userId: number) {
+  async removeTodo(todoId: number) {
     const todo = await this.todoRepository.findOne({
       where: {
-        id: todoId,
-        user: { id: userId }
+        id: todoId
       }
     });
     if (!todo) {

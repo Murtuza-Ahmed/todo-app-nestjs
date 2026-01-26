@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, ValidationPipe } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 
@@ -6,9 +6,9 @@ import { CreateTodoDto } from './dto/create-todo.dto';
 export class TodoController {
   constructor(private readonly todoService: TodoService) { }
 
-  @Post('create')
-  async createTodo(@Body() createTodoDto: CreateTodoDto, @Req() req) {
-    const todo = await this.todoService.create(createTodoDto, req.user.id)
+  @Post('create/:userId')
+  async createTodo(@Body(ValidationPipe) createTodoDto: CreateTodoDto, @Param('userId') userId: number) {
+    const todo = await this.todoService.create(createTodoDto, Number(userId))
     return {
       success: true,
       message: 'Todo created successfully',
@@ -16,9 +16,9 @@ export class TodoController {
     };
   }
 
-  @Get('completed')
-  async findCompletedTodos(@Req() req) {
-    const todos = await this.todoService.findTodosByUser(req.user.id, true);
+  @Get('completed/:userId')
+  async findCompletedTodos(@Param('userId') userId: number) {
+    const todos = await this.todoService.findTodosByUser(Number(userId), true);
     return {
       success: true,
       message: 'Completed todos retrieved successfully',
@@ -26,9 +26,9 @@ export class TodoController {
     };
   }
 
-  @Get('not-completed')
-  async findNotCompletedTodos(@Req() req) {
-    const todos = await this.todoService.findTodosByUser(req.user.id, false);
+  @Get('not-completed/:userId')
+  async findNotCompletedTodos(@Param('userId') userId: number) {
+    const todos = await this.todoService.findTodosByUser(Number(userId), false);
     return {
       success: true,
       message: 'Not completed todos retrieved successfully',
@@ -36,9 +36,9 @@ export class TodoController {
     };
   }
 
-  @Patch(':id/update')
-  async completeTodo(@Param('id') id: number, @Req() req) {
-    const todo = await this.todoService.updateTodoStatus(id, req.user.id);
+  @Patch('update/:id')
+  async completeTodo(@Param('id') id: number) {
+    const todo = await this.todoService.updateTodoStatus(Number(id));
     return {
       success: true,
       message: 'Todo marked as completed',
@@ -46,9 +46,9 @@ export class TodoController {
     };
   }
 
-  @Delete(':id')
-  async deleteTodo(@Param('id') id: number, @Req() req) {
-    await this.todoService.removeTodo(id, req.user.id);
+  @Delete('delete/:id')
+  async deleteTodo(@Param('id') id: number) {
+    await this.todoService.removeTodo(Number(id));
 
     return {
       success: true,
