@@ -37,7 +37,7 @@ export class UserService {
   }
 
   findUserById(id: number) {
-    const user = this.userRepository.findOneOrFail({ where: { id } });
+    const user = this.userRepository.findOne({ where: { id } });
     if (!user) {
       throw new BadRequestException('User not found');
     }
