@@ -14,6 +14,7 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) { }
 
+  // Create a new user
   async create(createUserDto: CreateUserDto) {
 
     const email = createUserDto.email.toLowerCase();
@@ -36,6 +37,7 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
+  // Find a user by id
   findUserById(id: number) {
     const user = this.userRepository.findOne({ where: { id } });
     if (!user) {
@@ -44,15 +46,23 @@ export class UserService {
     return user;
   }
 
-  findUserByEmail(email: string) {
-    const user = this.userRepository.findOneOrFail({ where: { email: email } });
+  // Find a user by email
+  async findUserByEmail(email: string) {
+
+    const user = await this.userRepository.findOne({ where: { email } });
+
     if (!user) {
       throw new BadRequestException('User not found');
     }
     return user;
   }
 
+  // Validate user password
+  async validatePassword(password: string, hashedPassword: string) {
+    return await bcrypt.compare(password, hashedPassword);
+  }
 
+  // Find all users
   async findAll() {
     const fetchAllUser = await this.userRepository.find();
     if (fetchAllUser.length === 0) {
@@ -65,6 +75,7 @@ export class UserService {
     return `This action returns a #${id} user`;
   }
 
+  // Delete a user by id
   async remove(id: number) {
     if (!id) {
       throw new BadRequestException('User id is required');

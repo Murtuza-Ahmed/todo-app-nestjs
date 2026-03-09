@@ -7,8 +7,8 @@ export class UserController {
   constructor(private readonly userService: UserService) { }
 
   @Post('create')
-  create(@Body(ValidationPipe) createUserDto: CreateUserDto) {
-    const user = this.userService.create(createUserDto);
+  async create(@Body(ValidationPipe) createUserDto: CreateUserDto) {
+    const user = await this.userService.create(createUserDto);
     return {
       success: true,
       message: 'User created successfully',
@@ -17,8 +17,8 @@ export class UserController {
   }
 
   @Get()
-  findAll() {
-    const users = this.userService.findAll();
+  async findAll() {
+    const users = await this.userService.findAll();
     return {
       success: true,
       message: 'Users found successfully',
