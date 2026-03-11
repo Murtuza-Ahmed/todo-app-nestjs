@@ -37,8 +37,8 @@ export class UserController {
   }
 
   @Delete('delete/:id')
-  remove(@Param('id') id: string) {
-    const result = this.userService.remove(+id);
+  async remove(@Param('id') id: string) {
+    const result = await this.userService.remove(+id);
     return {
       success: true,
       message: 'User deleted successfully',
