@@ -1,25 +1,25 @@
-import { Todo } from "src/todo/entities/todo.entity";
+import { Todo } from "@/todo/entities/todo.entity";
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from "typeorm";
 
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
   @Column()
-  firstName: string;
+  firstName!: string;
   @Column()
-  lastName: string;
+  lastName!: string;
   @Column({ unique: true })
-  email: string;
+  email!: string;
   @Column()
-  password: string;
+  password!: string;
   @Column()
-  role: string;
+  role!: string;
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   // one user can have multiple todos
   @OneToMany(() => Todo, (todo) => todo.user)
-  todos: Todo[]
+  todos!: Todo[]
 }
