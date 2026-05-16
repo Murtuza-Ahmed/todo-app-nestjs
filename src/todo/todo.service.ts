@@ -13,6 +13,12 @@ export class TodoService {
     private readonly userService: UserService,
   ) { }
   // CRUD Operations
+  /**
+   * Creates a new todo for a user
+   * @param createTodoDto 
+   * @param userId 
+   * @returns 
+   */
   async create(createTodoDto: CreateTodoDto, userId: number): Promise<Todo> {
     const user = await this.userService.findUserById(userId);
     if (!user) {
@@ -55,6 +61,14 @@ export class TodoService {
   //   })
   // }
 
+  /**
+   * Finds todos by user and completion status
+   * @param userId 
+   * @param completed 
+   * @returns 
+   */
+  // Combined method to find todos by user and completion status
+  // This method can be used for both completed and not completed todos by passing the appropriate boolean value for completed parameter
   async findTodosByUser(userId: number, completed: boolean) {
     const user = await this.userService.findUserById(userId);
     if (!user) {
