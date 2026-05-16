@@ -2,6 +2,15 @@ import { Controller, Get, Post, Body, Param, Delete, ValidationPipe } from '@nes
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
+/**
+ * UserController is responsible for handling incoming HTTP requests related to user operations and returning responses to the client. It uses the UserService to perform business logic and interact with the database. The controller defines endpoints for creating a user, retrieving all users, retrieving a user by id, and deleting a user.
+ * 
+ * Endpoints:
+ * - POST /user/create - Create a new user
+ * - GET /user - Retrieve all users
+ * - GET /user/:id - Retrieve a user by id
+ * - DELETE /user/delete/:id - Delete a user
+ */
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) { }

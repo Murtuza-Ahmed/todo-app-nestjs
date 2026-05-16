@@ -37,7 +37,12 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
-  // Find a user by id
+  /**
+   * Custom method to find a user by their ID, used for todo operations
+   * Finds a user by their ID
+   * @param id 
+   * @returns 
+   */
   findUserById(id: number) {
     const user = this.userRepository.findOne({ where: { id } });
     if (!user) {
@@ -46,7 +51,12 @@ export class UserService {
     return user;
   }
 
-  // Find a user by email
+  /**
+   * Custom method to find a user by their email address, used for authentication purposes
+   * Finds a user by their email address
+   * @param email 
+   * @returns 
+   */
   async findUserByEmail(email: string) {
 
     const user = await this.userRepository.findOne({ where: { email } });
@@ -57,7 +67,13 @@ export class UserService {
     return user;
   }
 
-  // Validate user password
+  /**
+   * Custom method to validate a user's password against a hashed password, used for authentication purposes
+   * Validates a user's password against a hashed password
+   * @param password 
+   * @param hashedPassword 
+   * @returns 
+   */
   async validatePassword(password: string, hashedPassword: string) {
     return await bcrypt.compare(password, hashedPassword);
   }
