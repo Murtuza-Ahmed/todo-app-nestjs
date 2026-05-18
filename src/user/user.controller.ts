@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Body, Param, Delete, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, ValidationPipe, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { RoleGuard } from '@/auth/guard/role.guard';
+import { Constants } from '@/utils/constants';
 
 /**
  * UserController is responsible for handling incoming HTTP requests related to user operations and returning responses to the client. It uses the UserService to perform business logic and interact with the database. The controller defines endpoints for creating a user, retrieving all users, retrieving a user by id, and deleting a user.
@@ -25,7 +27,12 @@ export class UserController {
     };
   }
 
+  /**
+   * Endpoint to retrieve all users, protected by RoleGuard to allow only admin users to access this endpoint
+   * @returns 
+   */
   @Get()
+  @UseGuards(new RoleGuard(Constants.ROLE.ADMIN_ROLE))
   async findAll() {
     const users = await this.userService.findAll();
     return {
@@ -45,7 +52,13 @@ export class UserController {
     };
   }
 
+  /**
+   * Endpoint to delete a user, protected by RoleGuard to allow only admin users to access this endpoint
+   * @param id 
+   * @returns 
+   */
   @Delete('delete/:id')
+  @UseGuards(new RoleGuard(Constants.ROLE.ADMIN_ROLE))
   async remove(@Param('id') id: string) {
     const result = await this.userService.remove(+id);
     return {
