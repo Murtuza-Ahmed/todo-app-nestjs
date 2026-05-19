@@ -14,7 +14,7 @@ import { ApiSecurity, ApiTags } from '@nestjs/swagger';
  * - DELETE /todo/delete/:id - Delete a todo
  */
 @Controller('todo')
-@ApiTags('Todo')
+@ApiTags('Todo') // This decorator adds a tag to the Swagger documentation for all endpoints in this controller, grouping them under the "Todo" category.
 @ApiSecurity('JWT-auth') // This decorator indicates that all endpoints in this controller require JWT authentication, referencing the 'JWT-auth' security scheme defined in the Swagger configuration in main.ts.
 
 export class TodoController {
