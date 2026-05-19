@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Req, ValidationPipe } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
+import { ApiSecurity, ApiTags } from '@nestjs/swagger';
 
 /**
  * TodoController is responsible for handling incoming HTTP requests related to todo operations and returning responses to the client. It uses the TodoService to perform business logic and interact with the database. The controller defines endpoints for creating a todo, retrieving completed and not completed todos for a user, updating the status of a todo, and deleting a todo.
@@ -13,6 +14,9 @@ import { CreateTodoDto } from './dto/create-todo.dto';
  * - DELETE /todo/delete/:id - Delete a todo
  */
 @Controller('todo')
+@ApiTags('Todo') // This decorator adds a tag to the Swagger documentation for all endpoints in this controller, grouping them under the "Todo" category.
+@ApiSecurity('JWT-auth') // This decorator indicates that all endpoints in this controller require JWT authentication, referencing the 'JWT-auth' security scheme defined in the Swagger configuration in main.ts.
+
 export class TodoController {
   constructor(private readonly todoService: TodoService) { }
 
