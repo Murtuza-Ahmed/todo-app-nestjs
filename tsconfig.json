@@ -21,7 +21,8 @@
     },
     "types": [
       "jest",
-      "mocha"
+      "mocha",
+      "node"
     ],
     "incremental": true,
     "skipLibCheck": true,
