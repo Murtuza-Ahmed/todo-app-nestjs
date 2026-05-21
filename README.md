@@ -12,7 +12,7 @@
 
 ---
 
-## 📋 Description
+## Description
 
 A production-ready Todo application that allows users to manage their tasks efficiently. The application features secure user authentication with JWT tokens, role-based access control (Admin/User roles), and comprehensive CRUD operations for todos. Built with modern TypeScript best practices and includes full API documentation via Swagger.
 
@@ -30,7 +30,7 @@ A production-ready Todo application that allows users to manage their tasks effi
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -85,7 +85,7 @@ This creates a default admin user for testing.
 
 ---
 
-## 📝 Running the Application
+## Running the Application
 
 ### Development Mode
 ```bash
@@ -117,7 +117,7 @@ You can test all endpoints directly from the Swagger UI. Use the "Authorize" but
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Run Unit Tests
 ```bash
@@ -141,7 +141,7 @@ npm run test:e2e
 
 ---
 
-## 🔨 Development Commands
+## Development Commands
 
 | Command | Description |
 |---------|-------------|
@@ -160,7 +160,7 @@ npm run test:e2e
 
 ---
 
-## 📋 Example API Usage
+## Example API Usage
 
 ### 1. Register a New User
 ```bash
@@ -227,7 +227,7 @@ curl -X DELETE http://localhost:3000/todo/delete/1 \
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ### Project Structure
 
@@ -270,7 +270,7 @@ src/
 
 ---
 
-## 🔐 Authentication & Authorization
+## Authentication & Authorization
 
 ### JWT Authentication
 - Global JWT guard protects all endpoints by default
@@ -289,7 +289,7 @@ src/
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### Authentication
 | Method | Endpoint | Description | Auth Required |
@@ -317,7 +317,7 @@ src/
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### User Entity
 ```typescript
@@ -348,7 +348,7 @@ src/
 
 ---
 
-## 🎯 Key Features in Detail
+## Key Features in Detail
 
 ### User Authentication & Registration
 - Secure password hashing using bcrypt
@@ -385,7 +385,7 @@ src/
 
 ---
 
-## 🧩 Module Overview
+## Module Overview
 
 ### AuthModule
 Handles user authentication and JWT token generation
@@ -411,7 +411,7 @@ Manages todo CRUD operations
 
 ---
 
-## 🔍 Code Quality
+## Code Quality
 
 ### Testing
 - Unit tests for all services and controllers
@@ -433,7 +433,7 @@ Manages todo CRUD operations
 
 ---
 
-## 📚 Project Structure Details
+## Project Structure Details
 
 ```
 todo-app-nestjs/
@@ -501,7 +501,7 @@ todo-app-nestjs/
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -513,13 +513,13 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📄 License
+## License
 
 This project is unlicensed. See the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Murtuza Ahmed**
 - Email: murtuza.programmer@gmail.com
@@ -527,7 +527,7 @@ This project is unlicensed. See the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [NestJS](https://nestjs.com/) - Progressive Node.js framework
 - [TypeORM](https://typeorm.io/) - ORM for TypeScript
@@ -537,7 +537,7 @@ This project is unlicensed. See the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 📞 Support
+## Support
 
 For questions or issues, please:
 1. Check existing GitHub issues
@@ -546,4 +546,4 @@ For questions or issues, please:
 
 ---
 
-**Happy Coding! 🎉**
+**Happy Coding! **
