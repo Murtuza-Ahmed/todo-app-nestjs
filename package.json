@@ -1,8 +1,8 @@
 {
   "name": "todo-app-nestjs",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "A simple TODO application built with NestJS, TypeORM, and PostgreSQL. This application allows users to create, read, update, and delete their tasks. It also includes user authentication using JWT.",
+  "author": "murtuza-ahmed <murtuza.programmer@gmail.com>",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
