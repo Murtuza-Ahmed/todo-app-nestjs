@@ -1,13 +1,16 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule, ObserveInstrument } from './app.module';
 import { JwtAuthGuard } from './auth/guard/jwt.guard';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   /**
    * Create the NestJS application using the AppModule and apply the global JWT authentication guard
+   * ObserveInstrument is used to instrument the application for monitoring and observability
    */
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    instrument: ObserveInstrument,
+  });
   app.enableCors(
     {
       origin: '*', // Allow all origins (you can specify specific origins if needed)
