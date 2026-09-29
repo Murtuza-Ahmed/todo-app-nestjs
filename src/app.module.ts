@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { createObserveModule } from '@nestjs/observe';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { TodoModule } from './todo/todo.module';
 import { AuthModule } from './auth/auth.module';
+
+export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
 @Module({
   imports: [
@@ -28,7 +31,12 @@ import { AuthModule } from './auth/auth.module';
     }),
     UserModule,
     TodoModule,
-    AuthModule
+    AuthModule,
+    ObserveModule.forRoot({
+      appKey: process.env.OBSERVE_APP_KEY!,
+      appSecret: process.env.OBSERVE_APP_SECRET!,
+      serviceId: 'todo-app',
+    })
   ],
   controllers: [],
   providers: [],
