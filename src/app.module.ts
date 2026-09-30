@@ -18,14 +18,12 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        host: configService.get<string>('DATABASE_HOST'),
-        port: configService.get<number>('DATABASE_PORT'),
+        type: 'postgres',
+        url: configService.get<string>('DATABASE_URL'),
+        synchronize: configService.get<string>('DATABASE_SYNC') === 'true',
+        logging: configService.get<string>('DATABASE_LOGGING') === 'true',
         username: configService.get<string>('DATABASE_USERNAME'),
         password: configService.get<string>('DATABASE_PASSWORD'),
-        database: configService.get<string>('DATABASE_URL'),
-        type: 'postgres',
-        synchronize: configService.get<boolean>('DATABASE_SYNC'),
-        logging: configService.get<boolean>('DATABASE_LOGGING'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
       })
     }),
