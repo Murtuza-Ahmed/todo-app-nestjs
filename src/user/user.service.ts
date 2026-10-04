@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
 import { Constants } from '@/utils/constants';
@@ -8,98 +12,117 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
-
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) { }
+  ) {}
 
   // Create a new user
   async create(createUserDto: CreateUserDto) {
-
     const email = createUserDto.email.toLowerCase();
 
     const exitingUser = await this.userRepository.findOne({
-      where: { email }
-    })
+      where: { email },
+    });
 
     if (exitingUser) {
       throw new BadRequestException('User with this email already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10)
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const user = this.userRepository.create({
       ...createUserDto,
-      email: createUserDto.email.toLowerCase(),
+      email,
       password: hashedPassword,
       role: Constants.ROLE.NORMAL_ROLE,
-    })
-    return await this.userRepository.save(user);
+    });
+    const saved = await this.userRepository.save(user);
+    // Never leak the password hash in API responses
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...safeUser } = saved;
+    return safeUser;
   }
 
   /**
-   * Custom method to find a user by their ID, used for todo operations
-   * Finds a user by their ID
-   * @param id 
-   * @returns 
+   * Finds a user by their ID. Used by todo operations and profile lookups.
+   * Returns null when the user does not exist so callers can decide the
+   * right error (404 vs 401) for their own context.
    */
-  findUserById(id: number) {
-    const user = this.userRepository.findOne({ where: { id } });
-    if (!user) {
-      throw new BadRequestException('User not found');
+  async findUserById(id: number): Promise<User | null> {
+    if (!id || Number.isNaN(Number(id))) {
+      return null;
     }
-    return user;
+    return this.userRepository.findOne({ where: { id: Number(id) } });
   }
 
   /**
-   * Custom method to find a user by their email address, used for authentication purposes
-   * Finds a user by their email address
-   * @param email 
-   * @returns 
+   * Finds a user by email WITHOUT the password hash (password column is
+   * `select: false`). Used by the JWT strategy to resolve the request user.
+   * Returns null instead of throwing so auth flows can answer 401.
    */
-  async findUserByEmail(email: string) {
-
-    const user = await this.userRepository.findOne({ where: { email } });
-
-    if (!user) {
-      throw new BadRequestException('User not found');
+  async findUserByEmail(email: string): Promise<User | null> {
+    if (!email) {
+      return null;
     }
-    return user;
+    return this.userRepository.findOne({
+      where: { email: email.toLowerCase() },
+    });
   }
 
   /**
-   * Custom method to validate a user's password against a hashed password, used for authentication purposes
-   * Validates a user's password against a hashed password
-   * @param password 
-   * @param hashedPassword 
-   * @returns 
+   * Finds a user by email INCLUDING the password hash.
+   * Only used by the local (login) strategy for credential checking.
+   */
+  async findUserByEmailWithPassword(email: string): Promise<User | null> {
+    if (!email) {
+      return null;
+    }
+    return this.userRepository.findOne({
+      where: { email: email.toLowerCase() },
+      select: [
+        'id',
+        'firstName',
+        'lastName',
+        'email',
+        'password',
+        'role',
+        'createdAt',
+      ],
+    });
+  }
+
+  /**
+   * Compares a plain password against a bcrypt hash.
    */
   async validatePassword(password: string, hashedPassword: string) {
+    if (!password || !hashedPassword) {
+      return false;
+    }
     return await bcrypt.compare(password, hashedPassword);
   }
 
-  // Find all users
-  async findAll() {
-    const fetchAllUser = await this.userRepository.find();
-    if (fetchAllUser.length === 0) {
-      throw new BadRequestException('No users found');
+  // Find all users (password hashes are never selected)
+  async findAll(): Promise<User[]> {
+    return this.userRepository.find();
+  }
+
+  // Find one user by id, 404 when missing
+  async findOne(id: number): Promise<User> {
+    const user = await this.findUserById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
-    return fetchAllUser;
+    return user;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  // Delete a user by id
+  // Delete a user by id, 404 when missing
   async remove(id: number) {
-    if (!id) {
-      throw new BadRequestException('User id is required');
+    const user = await this.findUserById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
-    const result = await this.userRepository.delete(id);
-    if (result.affected === 0) {
-      throw new BadRequestException('User not found');
-    }
-    return result;
+    // remove() (not delete()) so cascades/listeners run and todos are cleaned up
+    await this.userRepository.remove(user);
+    return { deleted: true, id: user.id };
   }
 }

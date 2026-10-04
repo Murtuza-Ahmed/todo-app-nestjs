@@ -3,17 +3,23 @@ import { AppDataSource } from './src/config/data-source';
 import { seedAdmin } from './src/database/seeds/admin.seed';
 
 /**
- * This file is responsible for seeding the database with initial data. It initializes the data source using the configuration defined in `data-source.ts`, and then calls the `seedAdmin` function to seed an admin user into the database. If the admin user already exists, it will skip the seeding process. After seeding is completed, it logs a success message and exits the process. If any errors occur during initialization or seeding, they are caught and logged to the console.
+ * Seeds the database with initial data. Initializes the data source using the
+ * configuration in `data-source.ts`, then runs the admin seed. Exits 0 on
+ * success and 1 on failure so CI/scripts can detect a broken seed run.
  */
-AppDataSource.initialize()
-  .then(async () => {
-
+async function run() {
+  try {
+    await AppDataSource.initialize();
     await seedAdmin(AppDataSource);
-
     console.log('Seeding completed');
+  } catch (error) {
+    console.error('Seeding failed:', error);
+    process.exitCode = 1;
+  } finally {
+    if (AppDataSource.isInitialized) {
+      await AppDataSource.destroy();
+    }
+  }
+}
 
-    process.exit();
-  })
-  .catch((error) => {
-    console.log(error);
-  });
+run();

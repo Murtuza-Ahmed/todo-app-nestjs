@@ -1,114 +1,110 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  NotFoundException,
+  Injectable,
+  ForbiddenException,
+} from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
+import { UpdateTodoDto } from './dto/update-todo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Todo } from './entities/todo.entity';
 import { Repository } from 'typeorm';
-import { UserService } from 'src/user/user.service';
+import { User } from '../user/entities/user.entity';
+import { Constants } from '@/utils/constants';
 
 @Injectable()
 export class TodoService {
   constructor(
     @InjectRepository(Todo)
     private readonly todoRepository: Repository<Todo>,
-    private readonly userService: UserService,
-  ) { }
-  // CRUD Operations
-  /**
-   * Creates a new todo for a user
-   * @param createTodoDto 
-   * @param userId 
-   * @returns 
-   */
-  async create(createTodoDto: CreateTodoDto, userId: number): Promise<Todo> {
-    const user = await this.userService.findUserById(userId);
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
+  ) {}
 
+  /**
+   * Creates a new todo for the authenticated user.
+   */
+  async create(createTodoDto: CreateTodoDto, owner: User): Promise<Todo> {
     const todo = this.todoRepository.create({
       title: createTodoDto.title,
       completed: false,
-      user: user,
-    })
-    return await this.todoRepository.save(todo);
+      user: owner,
+    });
+    return this.todoRepository.save(todo);
   }
 
-  // async findAllTodoByUserNotCompleted(userId: number) {
-  //   const user = await this.userService.findUserById(userId);
-  //   if (!user) {
-  //     throw new BadRequestException('User not found');
-  //   }
-  //   return this.todoRepository.find({
-  //     // relations: ['user'],
-  //     where: {
-  //       user: { id: userId },
-  //       completed: false
-  //     },
-  //   });
-  // }
-
-  // async findAllTodoByUserCompleted(userId: number) {
-  //   const user = await this.userService.findUserById(userId);
-  //   if (!user) {
-  //     throw new BadRequestException('User not found');
-  //   }
-  //   return this.todoRepository.find({
-  //     // relations: ['user'],
-  //     where: {
-  //       user: { id: userId },
-  //       completed: true
-  //     },
-  //   })
-  // }
+  /**
+   * All todos of a user, newest first.
+   */
+  async findAllByUser(userId: number): Promise<Todo[]> {
+    return this.todoRepository.find({
+      where: { user: { id: userId } },
+      order: { createdAt: 'DESC' },
+    });
+  }
 
   /**
-   * Finds todos by user and completion status
-   * @param userId 
-   * @param completed 
-   * @returns 
+   * Finds todos of a user by completion status.
    */
-  // Combined method to find todos by user and completion status
-  // This method can be used for both completed and not completed todos by passing the appropriate boolean value for completed parameter
-  async findTodosByUser(userId: number, completed: boolean) {
-    const user = await this.userService.findUserById(userId);
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
+  async findTodosByUser(userId: number, completed: boolean): Promise<Todo[]> {
     return this.todoRepository.find({
       where: {
         user: { id: userId },
         completed,
-      }
-    })
+      },
+      order: { createdAt: 'DESC' },
+    });
   }
 
-  async updateTodoStatus(todoId: number) {
-    if (!todoId) {
-      throw new BadRequestException('Todo ID is required');
-    }
-    const todo = await this.todoRepository.findOne({
-      where: {
-        id: todoId
-      }
-    });
-    if (!todo) {
-      throw new BadRequestException('Todo not found');
-    }
+  /**
+   * Updates a todo's title and/or completion status.
+   * Only the owner (or an admin) may update it.
+   */
+  async updateTodo(
+    todoId: number,
+    updateTodoDto: UpdateTodoDto,
+    requester: User,
+  ): Promise<Todo> {
+    const todo = await this.loadTodoOr404(todoId);
+    this.assertOwnership(todo, requester);
 
-    todo.completed = true;
+    if (updateTodoDto.title !== undefined) {
+      todo.title = updateTodoDto.title;
+    }
+    if (updateTodoDto.completed !== undefined) {
+      todo.completed = updateTodoDto.completed;
+    }
 
     return this.todoRepository.save(todo);
   }
 
-  async removeTodo(todoId: number) {
+  /**
+   * Deletes a todo. Only the owner (or an admin) may delete it.
+   */
+  async removeTodo(
+    todoId: number,
+    requester: User,
+  ): Promise<{ deleted: true; id: number }> {
+    const todo = await this.loadTodoOr404(todoId);
+    this.assertOwnership(todo, requester);
+
+    await this.todoRepository.remove(todo);
+    return { deleted: true, id: todoId };
+  }
+
+  private async loadTodoOr404(todoId: number): Promise<Todo> {
     const todo = await this.todoRepository.findOne({
-      where: {
-        id: todoId
-      }
+      where: { id: todoId },
+      relations: ['user'],
     });
     if (!todo) {
-      throw new BadRequestException('Todo not found');
+      throw new NotFoundException('Todo not found');
     }
-    await this.todoRepository.remove(todo);
+    return todo;
+  }
+
+  private assertOwnership(todo: Todo, requester: User): void {
+    const isOwner = todo.user.id === requester.id;
+    const isAdmin = requester.role === Constants.ROLE.ADMIN_ROLE;
+    if (!isOwner && !isAdmin) {
+      throw new ForbiddenException('You do not own this todo');
+    }
   }
 }

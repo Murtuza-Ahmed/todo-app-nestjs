@@ -1,6 +1,12 @@
-import { Todo } from "../../todo/entities/todo.entity";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from "typeorm";
-
+import { Todo } from '../../todo/entities/todo.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  OneToMany,
+} from 'typeorm';
+import { Constants } from '../../utils/constants';
 
 @Entity()
 export class User {
@@ -12,14 +18,14 @@ export class User {
   lastName!: string;
   @Column({ unique: true })
   email!: string;
-  @Column()
+  @Column({ select: false })
   password!: string;
-  @Column()
+  @Column({ default: Constants.ROLE.NORMAL_ROLE })
   role!: string;
   @CreateDateColumn()
   createdAt!: Date;
 
   // one user can have multiple todos
   @OneToMany(() => Todo, (todo) => todo.user)
-  todos!: Todo[]
+  todos!: Todo[];
 }

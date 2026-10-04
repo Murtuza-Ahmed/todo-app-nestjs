@@ -9,7 +9,10 @@ import { UserService } from 'src/user/user.service';
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private userService: UserService, configService: ConfigService) {
+  constructor(
+    private userService: UserService,
+    configService: ConfigService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -19,11 +22,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   /**
    * Validates the JWT token and finds the corresponding user.
-   * @param payload 
-   * @returns 
+   * @param payload
+   * @returns
    */
-  async validate(payload: any) {
-    const user = await this.userService.findUserByEmail(payload.email);
+  async validate(payload: { email?: string }) {
+    const user = await this.userService.findUserByEmail(payload.email ?? '');
     if (!user) throw new UnauthorizedException('Invalid token');
     return user;
   }

@@ -46,23 +46,23 @@ git clone https://github.com/Murtuza-Ahmed/todo-app-nestjs.git
 cd todo-app-nestjs
 ```
 
-2. **Create `.env` file** in the root directory:
+2. **Create `.env` file** in the root directory (see `.env.example` for the full list):
 ```env
-# Database Configuration
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=your_password
-DATABASE_URL=todo_app
-DATABASE_SYNC=true
+# The connection string is the single source of truth for the database
+DATABASE_URL=postgresql://user:password@host:5432/database
+DATABASE_SYNC=false
 DATABASE_LOGGING=false
 
 # Server Configuration
 PORT=3000
 
 # JWT Configuration
-JWT_SECRET=your_secret_key_here
-JWT_EXPIRATION=3600
+JWT_KEY=your_secret_key_here
+JWT_EXPIRES_IN=3600
+
+# Admin seed credentials (used by `npm run seed`)
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=your-strong-password
 ```
 
 3. **Install dependencies:**
@@ -170,10 +170,10 @@ curl -X POST http://localhost:3000/user/create \
     "firstName": "John",
     "lastName": "Doe",
     "email": "john@example.com",
-    "password": "SecurePassword123",
-    "role": "user"
+    "password": "SecurePassword123"
   }'
 ```
+(The role is always assigned server-side as a normal user; admins are created via `npm run seed`.)
 
 ### 2. Login
 ```bash
@@ -199,7 +199,7 @@ Response includes JWT token:
 
 ### 3. Create a Todo (Authenticated)
 ```bash
-curl -X POST http://localhost:3000/todo/create/1 \
+curl -X POST http://localhost:3000/todo/create \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -209,14 +209,18 @@ curl -X POST http://localhost:3000/todo/create/1 \
 
 ### 4. Get Pending Todos
 ```bash
-curl -X GET http://localhost:3000/todo/not-completed/1 \
+curl -X GET http://localhost:3000/todo/not-completed \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
-### 5. Mark Todo as Completed
+### 5. Update a Todo (title and/or completion status)
 ```bash
 curl -X PATCH http://localhost:3000/todo/update/1 \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "completed": true
+  }'
 ```
 
 ### 6. Delete a Todo
@@ -307,11 +311,12 @@ src/
 ### Todos
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---|
-| POST | `/todo/create/:userId` | Create a new todo | ✅ JWT |
-| GET | `/todo/completed/:userId` | Get completed todos | ✅ JWT |
-| GET | `/todo/not-completed/:userId` | Get pending todos | ✅ JWT |
-| PATCH | `/todo/update/:id` | Toggle todo completion status | ✅ JWT |
-| DELETE | `/todo/delete/:id` | Delete a todo | ✅ JWT |
+| POST | `/todo/create` | Create a new todo (owner = logged-in user) | ✅ JWT |
+| GET | `/todo` | Get all todos of the logged-in user | ✅ JWT |
+| GET | `/todo/completed` | Get completed todos of the logged-in user | ✅ JWT |
+| GET | `/todo/not-completed` | Get pending todos of the logged-in user | ✅ JWT |
+| PATCH | `/todo/update/:id` | Update title and/or completion status (owner or admin) | ✅ JWT |
+| DELETE | `/todo/delete/:id` | Delete a todo (owner or admin) | ✅ JWT |
 
 **API Documentation:** Visit `http://localhost:3000/api-docs` after starting the server.
 
