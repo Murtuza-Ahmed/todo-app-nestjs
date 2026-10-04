@@ -1,10 +1,10 @@
-import { CanActivate, ExecutionContext } from "@nestjs/common";
+import { CanActivate, ExecutionContext } from '@nestjs/common';
+import { AuthenticatedRequest } from '../types';
 
 /**
  * RoleGuard is a custom guard that implements the CanActivate interface from NestJS. It is used to protect certain routes or endpoints by checking if the user has the required role to access them. The guard takes a role as a parameter and checks if the user's role matches the required role before allowing access to the route.
  */
 export class RoleGuard implements CanActivate {
-
   /**
    * Constructor for RoleGuard, takes a role as a parameter and assigns it to the class property
    */
@@ -15,12 +15,12 @@ export class RoleGuard implements CanActivate {
 
   /**
    * Checks if the user has the required role to access the route
-   * @param context 
-   * @returns 
+   * @param context
+   * @returns
    */
   canActivate(context: ExecutionContext): boolean {
     const ctx = context.switchToHttp();
-    const request: any = ctx.getRequest<Request>();
+    const request = ctx.getRequest<AuthenticatedRequest>();
     const user = request.user;
 
     if (!user) {

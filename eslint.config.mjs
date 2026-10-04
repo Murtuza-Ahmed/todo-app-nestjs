@@ -25,11 +25,24 @@ export default tseslint.config(
     },
   },
   {
+    // Test files use loose jest mocks by convention — don't drown them in unsafe-* noise.
+    files: ['**/*.spec.ts', 'test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/require-await': 'off',
+    },
+  },
+  {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
-      '@typescript-eslint/space-curly-brace': ['error', 'always'],
+      // NOTE: there is no '@typescript-eslint/space-curly-brace' rule;
+      // prettier (via eslint-plugin-prettier) already enforces spacing.
     },
   },
 );

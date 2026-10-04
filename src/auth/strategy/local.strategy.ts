@@ -13,31 +13,37 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     super({
       usernameField: 'email',
       passwordField: 'password',
-    })
+    });
   }
 
   /**
-   * Validates the user's email and password
-   * @param email 
-   * @param password 
-   * @returns 
+   * Validates the user's email and password. Always answers with a generic
+   * 401 message so callers can't probe which emails are registered.
    */
   async validate(email: string, password: string): Promise<User> {
+    const invalid = () => {
+      throw new UnauthorizedException('Invalid email or password');
+    };
 
-    /**
-     * Finds a user by their email address, used for authentication purposes
-     * @param email 
-     * @returns
-     */
-    const user: User | null = await this.userService.findUserByEmail(email.toLowerCase());
+    if (!email || !password) {
+      invalid();
+    }
 
-    const isPasswordValid = await this.userService.validatePassword(password, user.password);
+    const user = await this.userService.findUserByEmailWithPassword(
+      email.toLowerCase(),
+    );
+    if (!user) {
+      invalid();
+    }
 
-    if (user && isPasswordValid) return user;
+    const isPasswordValid = await this.userService.validatePassword(
+      password,
+      user!.password,
+    );
+    if (!isPasswordValid) {
+      invalid();
+    }
 
-    if (user === undefined) throw new UnauthorizedException('Invalid email or password');
-
-    if (!isPasswordValid) throw new UnauthorizedException('Invalid password');
-    throw new UnauthorizedException('Invalid email or password');
+    return user!;
   }
 }

@@ -1,27 +1,38 @@
-import { Controller, Get, Post, Body, Param, Delete, ValidationPipe, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Req,
+  UseGuards,
+  ParseIntPipe,
+  ForbiddenException,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { RoleGuard } from '@/auth/guard/role.guard';
 import { Constants } from '@/utils/constants';
 import { ApiSecurity, ApiTags } from '@nestjs/swagger';
+import type { AuthenticatedRequest } from '@/auth/types';
 
 /**
- * UserController is responsible for handling incoming HTTP requests related to user operations and returning responses to the client. It uses the UserService to perform business logic and interact with the database. The controller defines endpoints for creating a user, retrieving all users, retrieving a user by id, and deleting a user.
- * 
+ * UserController is responsible for handling incoming HTTP requests related to user operations and returning responses to the client. It uses the UserService to perform business logic and interact with the database.
+ *
  * Endpoints:
- * - POST /user/create - Create a new user
- * - GET /user - Retrieve all users
- * - GET /user/:id - Retrieve a user by id
- * - DELETE /user/delete/:id - Delete a user
+ * - POST /user/create - Create a new user (public registration)
+ * - GET /user - Retrieve all users (admin only)
+ * - GET /user/:id - Retrieve a user by id (admin, or the user themself)
+ * - DELETE /user/delete/:id - Delete a user (admin only)
  */
 @Controller('user')
 @ApiTags('User')
-
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @Post('create')
-  async create(@Body(ValidationPipe) createUserDto: CreateUserDto) {
+  async create(@Body() createUserDto: CreateUserDto) {
     const user = await this.userService.create(createUserDto);
     return {
       success: true,
@@ -32,8 +43,7 @@ export class UserController {
 
   /**
    * Endpoint to retrieve all users, protected by RoleGuard to allow only admin users to access this endpoint
-  //*  This decorator indicates that all endpoints in this controller require JWT authentication, referencing the 'JWT-auth' security scheme defined in the Swagger configuration in main.ts.
-   * @returns 
+   * This decorator indicates that all endpoints in this controller require JWT authentication, referencing the 'JWT-auth' security scheme defined in the Swagger configuration in main.ts.
    */
   @Get()
   @ApiSecurity('JWT-auth')
@@ -47,9 +57,22 @@ export class UserController {
     };
   }
 
+  /**
+   * Retrieve a single user. Admins may fetch anyone; a normal user may only
+   * fetch their own profile.
+   */
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    const user = this.userService.findOne(id);
+  @ApiSecurity('JWT-auth')
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const requester = req.user;
+    const isAdmin = requester.role === Constants.ROLE.ADMIN_ROLE;
+    if (!isAdmin && requester.id !== id) {
+      throw new ForbiddenException('You can only view your own profile');
+    }
+    const user = await this.userService.findOne(id);
     return {
       success: true,
       message: 'User found successfully',
@@ -59,14 +82,12 @@ export class UserController {
 
   /**
    * Endpoint to delete a user, protected by RoleGuard to allow only admin users to access this endpoint
-   * @param id 
-   * @returns 
    */
   @Delete('delete/:id')
   @ApiSecurity('JWT-auth')
   @UseGuards(new RoleGuard(Constants.ROLE.ADMIN_ROLE))
-  async remove(@Param('id') id: string) {
-    const result = await this.userService.remove(+id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    const result = await this.userService.remove(id);
     return {
       success: true,
       message: 'User deleted successfully',

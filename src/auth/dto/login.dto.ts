@@ -1,18 +1,21 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsStrongPassword } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsString, MinLength } from 'class-validator';
 
 export class LoginDto {
-  @IsString()
+  @IsEmail()
   @ApiProperty({
     description: 'The email of the user',
-    example: 'user@example.com'
+    example: 'user@example.com',
   })
   email!: string;
 
-  @IsStrongPassword()
+  // NOTE: intentionally NOT @IsStrongPassword() — login must accept whatever
+  // password the user originally registered with.
+  @IsString()
+  @MinLength(1)
   @ApiProperty({
     description: 'The password of the user',
-    example: 'Password123!'
+    example: 'Password123!',
   })
   password!: string;
 }

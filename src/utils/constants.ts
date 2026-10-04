@@ -4,4 +4,4 @@ export const Constants = {
     NORMAL_ROLE: 'NORMAL_USER_ROLE',
   },
   BY_PASS_URLS: ['/user/create', '/auth/login'],
-}
+};
