@@ -1,19 +1,24 @@
-import { User } from "../../user/entities/user.entity";
-import { DataSource } from "typeorm";
+import { User } from '../../user/entities/user.entity';
+import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { Constants } from "../../utils/constants";
+import { Constants } from '../../utils/constants';
 
 /**
- * Seeds the admin user into the database if it does not already exist. The admin user's email and password are retrieved from environment variables. The password is hashed before being stored in the database. If an admin user with the specified email already exists, the seeding process is skipped.
- * @param dataSource 
- * @returns 
+ * Seeds the admin user if it does not already exist. The admin email and
+ * password come from ADMIN_EMAIL / ADMIN_PASSWORD. Fails fast with a clear
+ * message when they are missing instead of writing a broken row.
  */
 export async function seedAdmin(dataSource: DataSource) {
-
   const userRepository = dataSource.getRepository(User);
 
-  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminEmail || !adminPassword) {
+    throw new Error(
+      'Cannot seed admin user: ADMIN_EMAIL and ADMIN_PASSWORD must both be set in the environment.',
+    );
+  }
 
   const existingAdmin = await userRepository.findOne({
     where: {
@@ -26,7 +31,7 @@ export async function seedAdmin(dataSource: DataSource) {
     return;
   }
 
-  const hashPassword = await bcrypt.hash(adminPassword!, 10);
+  const hashPassword = await bcrypt.hash(adminPassword, 10);
 
   const adminUser = userRepository.create({
     firstName: 'Murtuza',

@@ -1,5 +1,11 @@
 import { User } from '../../user/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class Todo {
@@ -9,7 +15,7 @@ export class Todo {
   @Column()
   title!: string;
 
-  @Column()
+  @Column({ default: false })
   completed!: boolean;
 
   @CreateDateColumn()
