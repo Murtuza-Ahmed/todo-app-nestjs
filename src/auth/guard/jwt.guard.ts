@@ -19,6 +19,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         return true;
     }
 
+    for (let x = 0; x < Constants.PUBLIC_GET_URLS.length; x++) {
+      if (path === Constants.PUBLIC_GET_URLS[x] && request.method === 'GET')
+        return true;
+    }
+
     return super.canActivate(context);
   }
 }

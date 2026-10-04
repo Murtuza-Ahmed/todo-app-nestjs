@@ -12,6 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { TodoModule } from './todo/todo.module';
 import { AuthModule } from './auth/auth.module';
+import { HealthController } from './health/health.controller';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -67,7 +68,7 @@ if (!observeEnabled) {
         ]
       : []),
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [],
 })
 export class AppModule {}

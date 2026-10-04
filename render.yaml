@@ -1,0 +1,29 @@
+# Render Blueprint — deploy via Dashboard > New > Blueprint, pointing at this repo.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: todo-app-nestjs
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Render injects PORT automatically — do not set it here.
+      - key: DATABASE_URL
+        sync: false # paste the Neon connection string in the dashboard
+      - key: DATABASE_SYNC
+        value: 'false' # keep false in production; sync schema from local when needed
+      - key: DATABASE_LOGGING
+        value: 'false'
+      - key: JWT_KEY
+        generateValue: true # Render generates a random signing secret on first deploy
+      - key: JWT_EXPIRES_IN
+        value: '3600'
+      - key: CORS_ORIGIN
+        value: '*'
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
