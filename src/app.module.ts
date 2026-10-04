@@ -20,6 +20,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         url: configService.get<string>('DATABASE_URL'),
+        ssl: { rejectUnauthorized: false },
         synchronize: configService.get<string>('DATABASE_SYNC') === 'true',
         logging: configService.get<string>('DATABASE_LOGGING') === 'true',
         username: configService.get<string>('DATABASE_USERNAME'),
