@@ -117,6 +117,40 @@ You can test all endpoints directly from the Swagger UI. Use the "Authorize" but
 
 ---
 
+## Deploying to Render
+
+This API is a long-running NestJS server, so it deploys as a Docker web service on Render (not Vercel — serverless cold starts don't suit NestJS).
+
+### One-time setup
+
+1. **Prepare the database** (from your machine, once):
+   ```bash
+   # .env points at Neon with DATABASE_SYNC=true
+   npm run seed   # creates tables + the admin user
+   ```
+   Then set `DATABASE_SYNC=false` in your local `.env` — production always runs with sync off.
+
+2. **Push to GitHub** — include `Dockerfile`, `render.yaml` and `.github/workflows/ci.yml` (all in this repo).
+
+3. **Render Dashboard > New > Blueprint** and select the repo. Render reads `render.yaml` and creates the web service.
+
+4. **Fill in the secret env vars** in the dashboard:
+   - `DATABASE_URL` — your Neon connection string
+   - `ADMIN_EMAIL` / `ADMIN_PASSWORD` — only needed if you ever re-seed
+   - (`JWT_KEY` is auto-generated; the rest have defaults in `render.yaml`.)
+
+5. **Deploy.** Render builds the Docker image and starts `node dist/main`. Every push to `main` redeploys automatically; every push/PR also runs the GitHub Actions CI (lint + build + tests).
+
+### Health check
+
+`GET /` is public and returns `{ "status": "ok" }` — Render uses it as the `healthCheckPath`.
+
+### Seeding later
+
+Seed from your own machine any time (`npm run seed` with the Neon `DATABASE_URL` in `.env`) — no need to do it on the server.
+
+---
+
 ## Testing
 
 ### Run Unit Tests
